@@ -78,12 +78,13 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> &predicted, std::v
 		for (int o = 0; o < observations.size(); ++o)
 		{
 			auto d = dist(predicted[p].x, predicted[p].y, observations[o].x, observations[o].y);
-			if (d > min)
+			if (d < min)
 			{
 				min = d;
 				predicted[p].id = observations[o].id;
 			}
 		}
+		cout << p << " assoiction with landmark " << predicted[p].id << endl;
 	}
 	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the
 	//   observed measurement to this particular landmark.
@@ -132,7 +133,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		std::vector<double> sense_x;
 		std::vector<double> sense_y;
 
-		auto total_weight = 1;
+		auto total_weight = 1.0;
 		for (int o = 0; o < transformed_observations.size(); ++o)
 		{
 			associations.push_back(transformed_observations[o].id);
@@ -145,10 +146,13 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 				if (transformed_observations[o].id == in_range[j].id)
 				{
 					landmark = in_range[j];
+					cout << "Found!!!" << endl;
 					break;
 				}
 			}
-			total_weight *= weight(std_landmark[0], std_landmark[1], transformed_observations[o].x, transformed_observations[o].y, landmark.x, landmark.y);
+			auto w = weight(std_landmark[0], std_landmark[1], transformed_observations[o].x, transformed_observations[o].y, landmark.x, landmark.y);
+			cout << "Particle " << i << " weight to landmark " << landmark.id << " is " << w << endl;
+			total_weight *= w;
 		}
 		particles[i].weight = total_weight;
 		cout << "Particle " << i << " weight " << particles[i].weight << endl;
