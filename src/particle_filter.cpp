@@ -104,34 +104,28 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		dataAssociation(transformed_observations, in_range);
 
 		std::vector<int> associations;
-		std::vector<double> sense_x;
-		std::vector<double> sense_y;
-
+		std::vector<double> sense_x, sense_y;
 		auto total_weight = 1.0;
 		for (int o = 0; o < transformed_observations.size(); ++o)
 		{
-			if (transformed_observations[o].id != -1)
-			{
-				associations.push_back(transformed_observations[o].id);
-				sense_x.push_back(transformed_observations[o].x);
-				sense_y.push_back(transformed_observations[o].y);
-			}
+			if (transformed_observations[o].id == -1)
+				continue;
+
+			associations.push_back(transformed_observations[o].id);
+			sense_x.push_back(transformed_observations[o].x);
+			sense_y.push_back(transformed_observations[o].y);
+
 			LandmarkObs landmark;
-			bool is_found = false;
 			for (int j = 0; j < in_range.size(); j++)
 			{
 				if (transformed_observations[o].id == in_range[j].id)
 				{
 					landmark = in_range[j];
-					is_found = true;
 					break;
 				}
 			}
-			if (is_found)
-			{
-				auto w = weight(std_landmark[0], std_landmark[1], transformed_observations[o].x, transformed_observations[o].y, landmark.x, landmark.y);
-				total_weight *= w;
-			}
+			auto w = weight(std_landmark[0], std_landmark[1], transformed_observations[o].x, transformed_observations[o].y, landmark.x, landmark.y);
+			total_weight *= w;
 		}
 		particles[i].weight = total_weight;
 		SetAssociations(particles[i], associations, sense_x, sense_y);
