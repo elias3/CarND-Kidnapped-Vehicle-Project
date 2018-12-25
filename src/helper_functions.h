@@ -63,6 +63,7 @@ inline double dist(double x1, double y1, double x2, double y2)
 
 inline double weight(double sig_x, double sig_y, double x_obs, double y_obs, double mu_x, double mu_y)
 {
+	std::cout << "x_obs: " << x_obs << " y_obs: " << y_obs << " mu_x: " << mu_x << " mu_y: " << mu_y << std::endl;
 	auto gauss_norm = (1 / (2 * M_PI * sig_x * sig_y));
 	auto exponent = pow(x_obs - mu_x, 2) / (2 * pow(sig_x, 2)) + pow(y_obs - mu_y, 2) / (2 * pow(sig_y, 2));
 	return gauss_norm * exp(-exponent);
