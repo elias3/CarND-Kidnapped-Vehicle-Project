@@ -27,12 +27,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[])
 	normal_distribution<double> dist_y(y, std[1]);
 	normal_distribution<double> dist_theta(theta, std[2]);
 
-	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of
-	//   x, y, theta and their uncertainties from GPS) and all weights to 1.
-	// Add random Gaussian noise to each particle.
-	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 
-	num_particles = 10; // TODO: Set the number of particles
+	num_particles = 10;
 
 	for (int i = 0; i < num_particles; ++i)
 	{
@@ -52,9 +48,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[])
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate)
 {
-	// std::sin(pi / 6)
 	default_random_engine gen;
-	cout << "$$$$$$$" << endl;
 	for (int i = 0; i < num_particles; ++i)
 	{
 		if (yaw_rate != 0){
@@ -71,18 +65,8 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 			particles[i].x = dist_x(gen);
 			particles[i].y = dist_y(gen);
 			particles[i].theta = dist_theta(gen);
-
-			cout << "Partclie("<< i << ")=(" << particles[i].x << ","  << particles[i].y << "," << particles[i].theta << endl;	
-		}
-		else
-		{
-			cout << "Zero yaw rate!" << endl;
 		}
 	}
-	// TODO: Add measurements to each particle and add random Gaussian noise.
-	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
-	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
-	//  http://www.cplusplus.com/reference/random/default_random_engine/
 }
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> &predicted, std::vector<LandmarkObs> &observations)
@@ -102,14 +86,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> &predicted, std::v
 				predicted[p].id = observations[o].id;
 			}
 		}
-		//	cout << "predicted x = " << predicted[p].x << " , y = " << predicted[p].y << " observation x = " <<  observations[index].x << " y = " << observations[index].y << endl;
-
-		cout << p << " assoiction with landmark " << predicted[p].id << endl;
 	}
-	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the
-	//   observed measurement to this particular landmark.
-	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
-	//   implement this method and use it as a helper during the updateWeights phase.
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
@@ -147,7 +124,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 				in_range.push_back(observed);
 			}
 		}
-		cout << "Number of objects in range for particle: " << i <<  " is " << in_range.size() << endl;
 		dataAssociation(transformed_observations, in_range);
 
 		std::vector<int> associations;
@@ -170,32 +146,18 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 				if (transformed_observations[o].id == in_range[j].id)
 				{
 					landmark = in_range[j];
-					cout << "Found!!!" << endl;
 					is_found = true;
 					break;
 				}
 			}
 			if (is_found) {
 				auto w = weight(std_landmark[0], std_landmark[1], transformed_observations[o].x, transformed_observations[o].y, landmark.x, landmark.y);
-				cout << "Particle " << i << " weight to landmark " << landmark.id << " is " << w << endl;
 				total_weight *= w;
 			}
 		}
 		particles[i].weight = total_weight;
-		cout << "Particle " << i << " weight " << particles[i].weight << endl;
 		SetAssociations(particles[i], associations, sense_x, sense_y);
-		// particles[i].associations = transformed_observations;
 	}
-	// TODO: Update the weights of each particle using a mult-variate Gaussian distribution. You can read
-	//   more about this distribution here: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
-	// NOTE: The observations are given in the VEHICLE'S coordinate system. Your particles are located
-	//   according to the MAP'S coordinate system. You will need to transform between the two systems.
-	//   Keep in mind that this transformation requires both rotation AND translation (but no scaling).
-	//   The following is a good resource for the theory:
-	//   https://www.willamette.edu/~gorr/classes/GeneralGraphics/Transforms/transforms2d.htm
-	//   and the following is a good resource for the actual equation to implement (look at equation
-	//   3.33
-	//   http://planning.cs.uiuc.edu/node99.html
 }
 
 void ParticleFilter::resample()
@@ -209,17 +171,12 @@ void ParticleFilter::resample()
 	}
 	std::discrete_distribution<> d(weights.begin(), weights.end());
 	std::vector<Particle> particles_new;
-	cout << "Resample: " << endl;
 	for (int i = 0; i < num_particles; ++i)
 	{
 		auto chosen = d(gen);
-		cout << "particle " << chosen << " was chosen" << endl; 
 		particles_new.push_back(particles[d(gen)]);
 	}
 	particles = particles_new;
-	// TODO: Resample particles with replacement with probability proportional to their weight.
-	// NOTE: You may find std::discrete_distribution helpful here.
-	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 }
 
 void ParticleFilter::SetAssociations(Particle &particle, const std::vector<int> &associations,
