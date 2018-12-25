@@ -100,21 +100,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
 		// transform to map coordinates
 		auto transformed_observations = transform(observations, x_part, y_part, theta_part);
-
-		std::vector<LandmarkObs> in_range;
-		for (int l = 0; l < map_landmarks.landmark_list.size(); ++l)
-		{
-			auto &landmark = map_landmarks.landmark_list[l];
-			auto d = dist(landmark.x_f, landmark.y_f, x_part, y_part);
-			if (d <= sensor_range)
-			{
-				LandmarkObs observed;
-				observed.id = landmark.id_i;
-				observed.x = landmark.x_f;
-				observed.y = landmark.y_f;
-				in_range.push_back(observed);
-			}
-		}
+		auto in_range = convert_to_landmarks(x_part, y_part, sensor_range, map_landmarks);
 		dataAssociation(transformed_observations, in_range);
 
 		std::vector<int> associations;

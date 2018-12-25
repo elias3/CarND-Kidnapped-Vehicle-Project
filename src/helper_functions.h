@@ -85,6 +85,24 @@ inline std::vector<LandmarkObs> transform(const std::vector<LandmarkObs> &observ
 	return transformed_observations;
 }
 
+inline std::vector<LandmarkObs> convert_to_landmarks(double x, double y, double sensor_range, const Map &map_landmarks)
+{
+	std::vector<LandmarkObs> in_range;
+	for (int l = 0; l < map_landmarks.landmark_list.size(); ++l)
+	{
+		auto &landmark = map_landmarks.landmark_list[l];
+		auto d = dist(landmark.x_f, landmark.y_f, x, y);
+		if (d <= sensor_range)
+		{
+			LandmarkObs observed;
+			observed.id = landmark.id_i;
+			observed.x = landmark.x_f;
+			observed.y = landmark.y_f;
+			in_range.push_back(observed);
+		}
+	}
+	return in_range;
+}
 
 inline double *getError(double gt_x, double gt_y, double gt_theta, double pf_x, double pf_y, double pf_theta)
 {
