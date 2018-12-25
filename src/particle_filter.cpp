@@ -96,19 +96,10 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	{
 		auto x_part = particles[i].x;
 		auto y_part = particles[i].y;
+		auto theta_part = particles[i].theta;
 
-		std::vector<LandmarkObs> transformed_observations;
 		// transform to map coordinates
-		for (int o = 0; o < observations.size(); ++o)
-		{
-			auto theta = particles[i].theta;
-			auto x_obs = observations[o].x;
-			auto y_obs = observations[o].y;
-			LandmarkObs l;
-			l.x = x_part + (cos(theta) * x_obs) - (sin(theta) * y_obs);
-			l.y = y_part + (sin(theta) * x_obs) + (cos(theta) * y_obs);
-			transformed_observations.push_back(l);
-		}
+		auto transformed_observations = transform(observations, x_part, y_part, theta_part);
 
 		std::vector<LandmarkObs> in_range;
 		for (int l = 0; l < map_landmarks.landmark_list.size(); ++l)
@@ -150,7 +141,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 					break;
 				}
 			}
-			if (is_found) {
+			if (is_found)
+			{
 				auto w = weight(std_landmark[0], std_landmark[1], transformed_observations[o].x, transformed_observations[o].y, landmark.x, landmark.y);
 				total_weight *= w;
 			}
@@ -173,7 +165,6 @@ void ParticleFilter::resample()
 	std::vector<Particle> particles_new;
 	for (int i = 0; i < num_particles; ++i)
 	{
-		auto chosen = d(gen);
 		particles_new.push_back(particles[d(gen)]);
 	}
 	particles = particles_new;

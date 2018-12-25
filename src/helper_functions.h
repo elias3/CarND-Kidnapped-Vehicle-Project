@@ -61,12 +61,30 @@ inline double dist(double x1, double y1, double x2, double y2)
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
+// calculate weight according to a Multivariate normal distribution 
 inline double weight(double sig_x, double sig_y, double x_obs, double y_obs, double mu_x, double mu_y)
 {
 	auto gauss_norm = (1 / (2 * M_PI * sig_x * sig_y));
 	auto exponent = pow(x_obs - mu_x, 2) / (2 * pow(sig_x, 2)) + pow(y_obs - mu_y, 2) / (2 * pow(sig_y, 2));
 	return gauss_norm * exp(-exponent);
 }
+
+inline std::vector<LandmarkObs> transform(const std::vector<LandmarkObs> &observations, double x, double y, double theta)
+{
+	std::vector<LandmarkObs> transformed_observations;
+	// transform to map coordinates
+	for (int o = 0; o < observations.size(); ++o)
+	{
+		auto x_obs = observations[o].x;
+		auto y_obs = observations[o].y;
+		LandmarkObs l;
+		l.x = x + (cos(theta) * x_obs) - (sin(theta) * y_obs);
+		l.y = y + (sin(theta) * x_obs) + (cos(theta) * y_obs);
+		transformed_observations.push_back(l);
+	}
+	return transformed_observations;
+}
+
 
 inline double *getError(double gt_x, double gt_y, double gt_theta, double pf_x, double pf_y, double pf_theta)
 {
